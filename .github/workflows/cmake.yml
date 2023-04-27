@@ -35,7 +35,7 @@ jobs:
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
 
       run:
-        touch $PWD/main/Version.h; mkdir -p build; touch $PWD/build/sensor.bin; touch $PWD/build/sensor.elf;
+        touch $PWD/main/Version.h; mkdir -p build; echo "Test" >> $PWD/build/sensor.bin; echo "Test" >> $PWD/build/sensor.elf;
         echo "#define CIPHER_KEY \"${{ secrets.AHRS_CIPHER_KEY }}\"" >$PWD/main/cipherkey.h;
         mkdir -p artifacts;
         cp $PWD/build/sensor.bin $PWD/artifacts/sensor-${{ steps.version.outputs.FILE_VERSION }}.bin;
@@ -60,7 +60,7 @@ jobs:
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         title: "Release ${{ steps.version.outputs.release_name }}"
-        automatic_release_tag: "latest"
+        automatic_release_tag: "${{ steps.version.outputs.release_name }}"
         prerelease: false
         draft: true
         files: |
