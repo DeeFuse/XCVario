@@ -20,6 +20,7 @@ jobs:
       run:  VER=`date +"%y.%m%d-%H%M"`;
             BRANCH=`git branch --show-current`;
             echo "FILE_VERSION=${BRANCH}-${VER}" >> $GITHUB_ENV
+            echo "RELEASE_NAME=${VER}" >> $GITHUB_ENV
 
     - name: Build 
       # Use a bash shell so we can use the same syntax for environment variable
@@ -50,3 +51,14 @@ jobs:
       with:
         name: XCVario-${{ env.FILE_VERSION }}
         path: artifacts/sensor-${{ env.FILE_VERSION }}.elf.gz
+
+    - name: "Create Release"
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        title: "Release ${{ env.RELEASE_NAME }}"
+        prerelease: false
+        draft: true
+        files: |
+          artifacts/sensor-${{ env.FILE_VERSION }}.bin
+          artifacts/sensor-${{ env.FILE_VERSION }}.elf.gz
