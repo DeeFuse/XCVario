@@ -37,9 +37,9 @@ jobs:
       run:
         touch $PWD/main/Version.h; mkdir -p build; touch $PWD/build/sensor.bin; touch $PWD/build/sensor.elf;
         echo "#define CIPHER_KEY \"${{ secrets.AHRS_CIPHER_KEY }}\"" >$PWD/main/cipherkey.h;
+        mkdir -p artifacts;
         cp $PWD/build/sensor.bin $PWD/artifacts/sensor-${{ steps.version.outputs.FILE_VERSION }}.bin;
         cp $PWD/build/sensor.elf $PWD/artifacts/sensor-${{ steps.version.outputs.FILE_VERSION }}.elf;
-        mkdir -p artifacts;
         gzip $PWD/artifacts/sensor-${{ steps.version.outputs.FILE_VERSION }}.elf;
         ls artifacts/*;
 
