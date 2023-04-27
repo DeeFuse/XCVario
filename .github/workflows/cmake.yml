@@ -22,6 +22,7 @@ jobs:
         echo "release_full_name=$(date +'%y.%m%d-%H%M')" >> $GITHUB_OUTPUT
         echo "release_branch=$(git branch --show-current)" >> $GITHUB_OUTPUT
         echo "FILE_VERSION=$(git branch --show-current)-$(date +'%y.%m%d-%H%M')" >> $GITHUB_OUTPUT
+        echo $(git branch --show-current)-$(date +'%y.%m%d-%H%M')
       name: "Set current date as env variable"
       id: version  # this is used on variable path
 
@@ -35,9 +36,11 @@ jobs:
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
 
       run:
-        touch $PWD/main/Version.h;
+        touch $PWD/main/Version.h; touch $PWD/build/sensor.bin; touch $PWD/build/sensor.elf;
         echo "#define CIPHER_KEY \"${{ secrets.AHRS_CIPHER_KEY }}\"" >$PWD/main/cipherkey.h;
-        mkdir -p artifacts; touch $PWD/artifacts/sensor.bin; touch $PWD/artifacts/sensor.elf;
+        cp $PWD/build/sensor.bin $PWD/artifacts/sensor-${{ steps.version.outputs.FILE_VERSION }}.bin;
+        cp $PWD/build/sensor.elf $PWD/artifacts/sensor-${{ steps.version.outputs.FILE_VERSION }}.elf;
+        mkdir -p artifacts;
         gzip $PWD/artifacts/sensor-${{ steps.version.outputs.FILE_VERSION }}.elf;
         ls artifacts/*;
 
