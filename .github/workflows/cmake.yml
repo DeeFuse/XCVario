@@ -60,6 +60,7 @@ jobs:
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         title: "Release ${{ steps.version.outputs.release_name }}"
+        automatic_release_tag: "latest"
         prerelease: false
         draft: true
         files: |
