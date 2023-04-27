@@ -15,7 +15,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
 
     - name: Setup Variables
         id: vars
@@ -25,7 +24,8 @@ jobs:
           echo "release_branch=$(git branch --show-current)" >> $GITHUB_OUTPUT
           echo "FILE_VERSION=$release_branch-$release_full_name" >> $GITHUB_OUTPUT
 
-    - name: Build 
+    - uses: actions/checkout@v3
+      name: Build
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
       shell: bash
