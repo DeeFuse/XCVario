@@ -16,11 +16,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: set-env
-      run:  VER=`date +"%y.%m%d-%H%M"`;
-            BRANCH=`git branch --show-current`;
-            echo "FILE_VERSION=${BRANCH}-${VER}" >> $GITHUB_ENV
-            echo "RELEASE_NAME=${VER}" >> $GITHUB_ENV
+
+    - name: Setup Variables
+        id: vars
+        run: |
+          echo "release_name=$(date +'%y.%m%d')" >> $GITHUB_OUTPUT
+          echo "release_full_name=$(date +'%y.%m%d-%H%M')" >> $GITHUB_OUTPUT
+          echo "release_branch=$(git branch --show-current)" >> $GITHUB_OUTPUT
+          echo "FILE_VERSION=$release_branch-$release_full_name" >> $GITHUB_OUTPUT
 
     - name: Build 
       # Use a bash shell so we can use the same syntax for environment variable
@@ -33,32 +36,32 @@ jobs:
 
       run:  touch $PWD/main/Version.h;
             echo "#define CIPHER_KEY \"${{ secrets.AHRS_CIPHER_KEY }}\"" >$PWD/main/cipherkey.h;
-            docker run --rm -v $PWD:/project -w /project espressif/idf:release-v4.3 idf.py build;
-            mkdir -p artifacts;
-            cp $PWD/build/sensor.bin $PWD/artifacts/sensor-${{ env.FILE_VERSION }}.bin;
-            cp $PWD/build/sensor.elf $PWD/artifacts/sensor-${{ env.FILE_VERSION }}.elf;
-            gzip $PWD/artifacts/sensor-${{ env.FILE_VERSION }}.elf;
+
+            mkdir -p artifacts; touch $PWD/build/sensor.bin; touch $PWD/build/sensor.elf;
+            cp $PWD/build/sensor.bin $PWD/artifacts/sensor-${{ steps.vars.outputs.FILE_VERSION }}.bin;
+            cp $PWD/build/sensor.elf $PWD/artifacts/sensor-${{ steps.vars.outputs.FILE_VERSION }}.elf;
+            gzip $PWD/artifacts/sensor-${{ steps.vars.outputs.FILE_VERSION }}.elf;
             ls artifacts/*;
 
     - name: Upload binary
       uses: actions/upload-artifact@v3
       with:
-        name: XCVario-${{ env.FILE_VERSION }}
-        path: artifacts/sensor-${{ env.FILE_VERSION }}.bin
+        name: XCVario-${{ steps.vars.outputs.FILE_VERSION }}
+        path: artifacts/sensor-${{ steps.vars.outputs.FILE_VERSION }}.bin
      
     - name: Upload ELF
       uses: actions/upload-artifact@v3
       with:
-        name: XCVario-${{ env.FILE_VERSION }}
-        path: artifacts/sensor-${{ env.FILE_VERSION }}.elf.gz
+        name: XCVario-${{ steps.vars.outputs.FILE_VERSION }}
+        path: artifacts/sensor-${{ steps.vars.outputs.FILE_VERSION }}.elf.gz
 
     - name: "Create Release"
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        title: "Release ${{ env.RELEASE_NAME }}"
+        title: "Release ${{ steps.vars.outputs.release_name }}"
         prerelease: false
         draft: true
         files: |
-          artifacts/sensor-${{ env.FILE_VERSION }}.bin
-          artifacts/sensor-${{ env.FILE_VERSION }}.elf.gz
+          artifacts/sensor-${{ steps.vars.outputs.FILE_VERSION }}.bin
+          artifacts/sensor-${{ steps.vars.outputs.FILE_VERSION }}.elf.gz
